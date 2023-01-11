@@ -1,0 +1,558 @@
+---
+title: "Curso R para Logistica"
+author: "Magali Eisik"
+date: "6/12/2022"
+output: html_document
+---
+![](https://cdn.shopify.com/s/files/1/0286/8677/8442/files/1_300x_a68c8ade-8577-4af0-8507-53eef8f099fa_100x.png?v=1652370796){width='100px'}
+
+## Este documento forma parte del curso: "Fundamentos de R para Logistica" de la academia *Hub Logistico*. 
+
+
+https://hublogistico.com/
+
+## Ejercicio 1
+
+La empresa  argentina "ABC" productora de cervezas posee 6 centros de distribucion ubicados en las siguientes localidades y se presenta la informacion del volumen que transporta y costo del transporte:
+
+Localidades: Cordoba, CABA, Salta, Chubut, Jujuy, Misiones
+
+Volumen transportado (litros) : 80, 120, 159, 171, 69, 72
+
+Costo transporte ($/km): 500, 1200, 200, 650, 550, 720
+
+1) Crear los vectores: localidades, volumen, costo_transporte
+```{r}
+localidades<- c("Cordoba", "CABA", "Salta", "Chubut", "Jujuy", "Misiones")
+volumen <- c(80, 120, 159, 171, 69, 72)
+costo_transporte <- c(500, 1200, 200, 650, 550, 720)
+localidades
+volumen
+costo_transporte
+```
+
+2) Construir una matriz llamada abc, uniendo volumen y costo_transporte, por columna
+```{r}
+abc<- cbind (volumen, costo_transporte)
+abc
+```
+ 
+3)construir un data frame llamado empresa_abc utilizando los vectores localidades, volumen
+y costo_transporte
+
+```{r}
+empresa_abc<- data.frame(localidades,volumen,costo_transporte)
+empresa_abc
+```
+
+## Ejercicio 2
+
+La empresa USPS  brinda el servicio postal en USA. A continuacion  se presentan los datos de:
+
+Servicio (m: mail, p: package): Global, Priority_p, Priority_m, First_Class_p,  First_Class_m
+
+Precio: 67.80 , 47.95, 29.60, 14.85, 2.75
+
+Tiempo de entrega (dias): 2,4,8,5,7
+
+1)Crear los vectores: servicio, precio, tiempo_entrega.
+```{r}
+servicio<- c("Global", "Priority_p", "Priority_m", "First_Class_p",  "First_Class_m")
+precio <- c(67.80 , 47.95, 29.60, 14.85, 2.75)
+tiempo_entrega <- c(2,4,8,5,7)
+servicio
+precio
+tiempo_entrega
+```
+
+2)Construir un data frame denominado usps con los vectores creados anteriormente.
+```{r}
+usps <- data.frame(servicio,precio,tiempo_entrega)
+usps
+```
+
+3) Mostrar la variable servicio del data frame usps
+```{r}
+usps$servicio
+
+```
+
+4)Cual es el minimo y la posicion del mismo, de la variable precio?
+```{r}
+min(usps$precio)
+which.min(usps$precio)
+```
+Para aplicar las funciones a variables de data frame:
+nombre data frame$ nombre de variable
+
+## Ejercicio 3
+La base de datos que vamos a utilizar a continuacion fue extraida de
+https://brunel.figshare.com/articles/dataset/Supply_Chain_Logistics_Problem_Dataset/7558679
+(los datos fueron tomados por Brunel University of London)
+Importamos la base de datos y la nombramos sp
+
+```{r}
+library(readxl)
+sp<- read_excel("sp.xlsx")
+```
+
+
+
+Service level: nivel de servicio
+
+DTD (Door to Door), puerta a puerta
+
+DTP (Door to Port), puerta a puerto
+
+CRF (Customer Referred Freight), flete recomendado por clientes
+
+
+Describir la estructura de la base de datos
+```{r}
+str(sp)
+```
+
+
+La variable weight debe pasarse a una variable numerica:
+```{r}
+sp$Weight<- as.numeric(sp$Weight)
+```
+
+
+
+Calcular la media de las variables weight y unit quantity
+
+```{r}
+mean(sp$Weight)
+mean(sp$Unit_quantity)
+```
+
+Calcular la mediana de las variables weight y unit quantity
+```{r}
+median(sp$Weight)
+median(sp$Unit_quantity)
+
+```
+
+
+Realizar el grafico adecuado para la variable weight
+```{r}
+hist(sp$Weight,xlab = "Peso",ylab = "Frecuencia", main="Histograma de la variable peso", col="coral")
+```
+Como la variable weight es cuantitativa continua, se debe realizar un HISTOGRAMA.
+
+
+
+Ordenar de forma ascendente la variable weight
+```{r}
+sort(sp$Weight)
+```
+
+Otra forma:
+sort(sp$Weight,decreasing = FALSE)
+
+## Analisis de datos faltantes
+  
+Importar la base de datos supply_chain(na) y la nombramos datos (esta en hoja2)
+```{r}
+datos <- read_excel("sp.xlsx", sheet = "Hoja2")
+```
+
+Vemos que la variable peso la leyo como caracter, hay que pasarla a variable numerica
+```{r}
+datos$Peso<- as.numeric(datos$Peso)
+```
+
+Calculamos la media de la variable peso
+```{r}
+mean(datos$Peso)
+```
+
+Podemos observar que arrojo un NA. Se debe especificar en la funcion mean, que se deben omitir los NA:
+```{r}
+mean(datos$Peso,na.rm = TRUE)
+```
+Queremos saber cuantos datos faltantes tenemos en nuestra base de datos:
+```{r}
+sum(is.na(datos))
+```
+
+Podemos visualizar los datos faltantes, se pueden utilizar distintos paquetes, entre ellos:
+-Mice
+-Visdat
+
+Se debe instalar primero cada paquete y luego cargar en la library en memoria para poder utilizarla
+```{r}
+library(visdat)
+vis_miss(datos, sort=TRUE)
+vis_miss(datos, cluster = TRUE)
+vis_dat(datos)
+colSums(is.na(datos))
+```
+
+## Utilizando tidyverse:
+Previamente instale el paquete tidyverse
+```{r}
+library(tidyverse)
+```
+
+En R disponemos de muchos data set que podemos utilizar, algunos ejemplos:
+https://stat.ethz.ch/R-manual/R-devel/library/datasets/html/00Index.html
+Vamos a trabajar con el data set mtcars, se puede buscar en help mtcars y ahi disponemos de toda la informacion del data set.
+
+
+```{r}
+mtcars
+```
+
+Los datos se extrajeron de la revista estadounidense Motor Trend de 1974 
+y comprenden el consumo de combustible y 10 aspectos del diseño y rendimiento del automóvil para 32 automóviles (modelos 1973--74).
+
+A data frame with 32 observations on 11 (numeric) variables.
+
+mpg	Miles/(US) gallon, millas por galon
+
+cyl	Number of cylinders, numero de cilindros
+
+disp	Displacement (cu.in.), desplazamiento
+
+hp	Gross horsepower, caballos de fuerza
+
+drat	Rear axle ratio, relacion de eje
+
+wt	Weight (1000 lbs), peso
+
+qsec	1/4 mile time, tiempo de 1/4 de mila
+
+Engine (0 = V-shaped, 1 = straight) ingenieria del motor  (0 = en forma de V, 1 = recto)
+
+Transmission (0 = automatic, 1 = manual) , transmision
+
+gear	Number of forward gears, #numero de marchas
+
+carb	Number of carburetors, numero de carburadores
+
+Guardemos el paquete mtcars en un objeto llamado "datos_autos"
+```{r}
+datos_autos <- data.frame(mtcars)
+```
+
+Cuantas filas y columnas tiene nuestro data frame ?
+```{r}
+nrow(datos_autos)
+ncol(datos_autos)
+```
+
+Queremos ver las primeras 3 filas del data frame
+```{r}
+head(datos_autos,3)
+```
+
+Queremos ver las ultimas 5 filas del data frame
+```{r}
+tail(datos_autos,5)
+
+```
+
+Si queremos alguna columna del data frame, nombramos al data frame +$ + nombre de columna:
+datos_autos$mpg
+
+Cual es la longitud de mpg?
+```{r}
+length(datos_autos$mpg)
+```
+
+
+Cual sera el valor promedio de millas por galon? 
+```{r}
+mean(datos_autos$mpg)
+```
+
+
+Cual es la longitud de la variable mpg?
+```{r}
+length(datos_autos$mpg)
+```
+
+
+Realizar un histograma de la variable mpg
+```{r}
+hist(mtcars$mpg,xlab = "Millas por galon",ylab = "Frecuencia",main = "Histograma", col = "green",border = "chocolate")
+
+```
+Algunas medidas de resumen...
+
+```{r}
+summary(mtcars$mpg)
+var(mtcars$mpg)
+sd(mtcars$mpg)
+```
+
+Otra forma para calcular los estadisticos en un solo codigo:
+```{r}
+mifuncion<-function(x) {c(media=mean(x), 
+                          mediana=median(x), 
+                          min=min(x), 
+                          max=max(x),
+                          varianza=var(x),rango=range(x),cuartiles=quantile(x))}
+mifuncion(mtcars$mpg)
+```
+
+
+
+## Ejercicio 4
+Importamos la base sp (hoja 1)
+
+```{r}
+library(readxl)
+sp<- read_excel("sp.xlsx")
+```
+
+1) Seleccionar las columnas weight y unit_quantity, y guardarlas como un data frame llamado d_sp
+
+```{r}
+d_sp<- sp %>% select(Unit_quantity,Weight)
+dim(d_sp)
+str(d_sp)
+```
+Como observamos, ahora tenemos un data frame con 2 columnas y 139 filas
+La variable Weight debe ser convertida a variable numerica:
+
+```{r}
+d_sp$Weight<- as.numeric(d_sp$Weight)
+str(d_sp)
+```
+
+
+2) Seleccionar las filas con un Weight mayor a 60
+
+```{r}
+d_sp %>% subset(Weight > 60)
+```
+
+3) Ordenar la variable Weight de forma ascendente y arrojar las primeras 20 filas del data set
+
+```{r}
+d_sp %>% arrange(Weight) %>%
+  head (10)
+```
+
+4) Ordenar la variable Weight de forma ascendente y arrojar las ultimas 20 filas del data set
+
+```{r}
+d_sp %>% arrange(Weight) %>%
+  tail (10)
+```
+
+5) Generar la media (Media) y mediana (Mediana) de la variable Unit_quantity 
+
+```{r}
+d_sp %>% summarise(Media = mean(Unit_quantity ),Mediana=median(Unit_quantity))
+```
+6) Generar el rango (Rango) y el desvio estandar (SD) de la variable weight
+
+```{r}
+d_sp %>% summarise(Rango=range(Weight),SD=sd(Weight))
+```
+
+7) Renombrar las variables Weight en Peso y Unit_quantity en Unidades
+
+```{r}
+d_sp %>% rename("Peso"= "Weight", "Unidades"="Unit_quantity")
+```
+
+
+Volvemos a trabajar con el data set sp
+
+```{r}
+sp$Weight<- as.numeric(sp$Weight)
+sp$Service_level<- as.factor(sp$Service_level)
+```
+
+8) Realizar un diagrama de dispersion entre Weight (y) y Unit_quantity (x).
+Utilizar el paquete ggplot2
+
+```{r}
+library(ggplot2)
+ggplot(sp, aes(Unit_quantity,Weight)) + geom_point(col="coral", shape=17)+
+  labs(
+    x = "Unidades",
+    y = "Peso")+ ggtitle("Peso en funcion de unidades")
+#Si queremos agregar una regresion lineal al grafico:
+ggplot(sp, aes(Unit_quantity,Weight)) + geom_point(col="coral", shape=17)+
+  labs(
+    x = "Unidades",
+    y = "Peso")+ ggtitle("Peso en funcion de unidades") +geom_smooth(method = "lm")
+
+```
+9) Subdividir el grafico por tipo de Servicio (Service_level)
+
+```{r}
+ggplot(sp, aes(Unit_quantity,Weight)) + geom_point(col="coral", shape=17)+
+  labs(
+    x = "Unidades",
+    y = "Peso")+ ggtitle("Peso en funcion de unidades") + facet_wrap(~Service_level)
+```
+
+10) Realizar un grafico de densidad para la variable Weight. Por que?
+
+Como la VA es cuantitativa continua se puede realizar un Histograma/Grafico de Densidad
+
+```{r}
+ggplot(sp, aes(Weight,fill="blue"),binwidth=30) + geom_density()+ xlab("Peso") + 
+  ylab("Frecuencia") + ggtitle("Grafico de la variable Peso")
+```
+
+
+
+11) Realizar un boxplot para la variable Unit_quantity segun el tipo de Servicio
+
+```{r}
+ggplot(sp, aes(x = Service_level, y = Unit_quantity)) +
+  geom_boxplot(color="violet", fill="coral", alpha = 0.7) + 
+  geom_jitter(aes(color = Unit_quantity), size = 1, alpha = 0.7)+ 
+  xlab("Tipo de servicio") + 
+  ylab("Unidades") +
+  ggtitle("Boxplot") + 
+  theme_minimal() + 
+    scale_fill_brewer(palette="BuPu")
+```
+## Ultimo ejercicio!
+
+
+Para un nuevo lanzamiento de una butaca de autos para niños, se estudió la base de datos Carseats.
+Para analizar dichos datos ejecute:
+```{r}
+library(tidyverse)
+require(ISLR)
+data("Carseats")
+```
+
+
+La base de datos Carseats contiene las siguientes variables:
+Sales: Ventas unitarias (en miles) en cada ubicación
+CompPrice: Precio cobrado por la competencia en cada ubicación
+Income: Nivel de ingresos de la comunidad (en miles de dólares)
+Advertising: Presupuesto de publicidad local para la empresa en cada ubicación (en miles de dólares)
+Population: Tamaño de la población en la región (en miles)
+Price: Precio que cobra la empresa por los asientos de seguridad en cada sitio
+ShelveLoc: Un factor con niveles Malo, Bueno y Medio que indica la calidad de la ubicación de las
+estanterías para los asientos de seguridad en cada sitio.
+Age: Edad media de la población local
+Education: Nivel de educación en cada ubicación
+Urban: Un factor con niveles No y Sí para indicar si la tienda se encuentra en una ubicación urbana
+o rural.
+US: corresponde a un factor con niveles No y Sí para indicar si la tienda está en EE. UU o no.
+
+
+1) Guardar el data set carseats en un objeto llamado autos
+
+```{r}
+autos<- data.frame(Carseats)
+```
+
+2) Calcule el valor promedio  del precio de asientos de seguridad (price)
+
+```{r}
+mean(autos$Price)
+```
+
+3) Seleccione las variables Sales, Price e Income del data frame
+
+```{r}
+autos %>% select(Sales,Price,Income)
+autos %>% select(1,3,6)
+```
+
+4) Seleccione las variables Age y Education, mostrando las ultimas 5 filas
+
+```{r}
+autos %>% select(Age,Education)%>%tail(5)
+autos %>% select(8,9)%>%tail(5)
+```
+
+
+5) Seleccione aquellas filas que corresponden a tiendas de US (US=TIENDAS DE USA, YES /NO)
+
+```{r}
+autos %>% filter(US=="Yes")
+```
+
+
+6) Seleccione aquellas filas que corresponden a tiendas de US (US=TIENDAS DE USA, YES /NO)
+y con ingreso (income) mayor a 120
+
+```{r}
+autos %>% filter(US=="Yes" & Income>=120)
+```
+
+7) Ordene de forma ascendente la variable Age, mostrando las primeras 20 filas
+
+```{r}
+autos %>% arrange(Age)%>% head(20)
+```
+
+
+
+8) Realice un boxplot de la variable Income, segun US
+
+```{r}
+ggplot(autos, aes(x = US, y = Income)) +
+  geom_boxplot(aes(color = US), alpha = 0.7) + 
+  geom_jitter(aes(color = US), size = 1, alpha = 0.7)+ 
+  xlab("Tienda en US") + 
+  ylab("Ingreso") +
+  ggtitle("Boxplot") + 
+  theme_minimal() 
+
+```
+
+
+9) Realizar el grafico de densidad de la variables Sales
+```{r}
+ggplot(autos, aes(Sales,fill="blue"),binwidth=30) + geom_density()+ xlab("Ventas") + 
+  ylab("Frecuencia") + ggtitle("Ventas") +
+  theme_minimal()
+```
+
+10) Colocar los dos graficos anteriores en una misma hoja
+
+```{r}
+library(gridExtra)
+library(dplyr)
+g1<- ggplot(autos, aes(x = US, y = Income)) +
+  geom_boxplot(aes(color = US), alpha = 0.7) + 
+  geom_jitter(aes(color = US), size = 1, alpha = 0.7)+ 
+  xlab("Tienda en US") + 
+  ylab("Ingreso") +
+  ggtitle("Boxplot") + 
+  theme_minimal() 
+g2 <- ggplot(autos, aes(Sales,fill="blue"),binwidth=30) + geom_density()+ xlab("Ventas") + 
+  ylab("Frecuencia") + ggtitle("Ventas") +
+  theme_minimal()
+grid.arrange(g1, g2,nrow=1)
+grid.arrange(g1, g2)
+```
+
+11) Realizar un diagrama de dispersion entre Sales (y) y Price (x)
+
+```{r}
+ggplot(autos, aes(
+Price, Sales)) +
+  geom_point(col="violet") +geom_smooth(method = "lm")+xlab("Precio de asientos ") + 
+  ylab("Ventas") +
+  ggtitle("Ventas vs precio") + 
+  theme_minimal() 
+```
+
+
+12) Realice un barplot para la variables Urban (yes= se encuentra en zona urbana)
+```{r}
+ggplot(autos, aes(Urban)) + 
+  geom_bar(col="darkslategray", fill="cyan3")+ xlab("Tienda urbana") + 
+  ylab("Frecuencia") + 
+  ggtitle("Tipos de tiendas") +
+ theme_minimal()
+
+```
+
